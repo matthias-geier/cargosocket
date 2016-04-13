@@ -2,9 +2,10 @@ class Teacher
   include Cargobull::Service
 
   def channels(params); ["a", "b"]; end
-  def reference; "works"; end
+  def reference(params); "works"; end
   def subscribe(ref, channel); "works"; end
   def unsubscribe(ref, channel); "works"; end
+  def error(ref, channel); "works"; end
   def pop(ref, channel, message); "works"; end
   def push(ref, channel, message); "works"; end
 end
@@ -19,6 +20,7 @@ class Somophore
   def channels(params); "works"; end
   def subscribe(ref, channel); nil; end
   def unsubscribe(ref, channel); nil; end
+  def error(ref, channel); nil; end
   def pop(ref, channel, message); nil; end
   def push(ref, channel, message); nil; end
 end
@@ -46,15 +48,15 @@ describe Cargosocket::StreamAdapters::CargobullAdapter do
 
   describe "reference" do
     it "should not forward any value" do
-      assert_equal "works", CargobullAdapter.reference(@env, 'student')
+      assert_equal "works", CargobullAdapter.reference(@env, 'student', {})
     end
 
     it "should not forward anything when method is missing" do
-      assert_nil CargobullAdapter.reference(@env, 'professor')
+      assert_nil CargobullAdapter.reference(@env, 'professor', {})
     end
   end
 
-  [:subscribe, :unsubscribe].each do |m|
+  [:subscribe, :unsubscribe, :error].each do |m|
     describe m do
       it "should pass any not-nil value into block and back to scope" do
         blk = ->(v) do

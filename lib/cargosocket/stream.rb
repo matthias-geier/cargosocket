@@ -32,7 +32,7 @@ module Cargosocket
       cb_adapter = StreamAdapters::CargobullAdapter
 
       channels = cb_adapter.channels(cargoenv, path, query)
-      ref = cb_adapter.reference(cargoenv, path)
+      ref = cb_adapter.reference(cargoenv, path, query)
       if channels && ref
         state = cargoenv[:adapter].subscribe(*channels) do |channel, message|
           cb_adapter.pop(cargoenv, path, ref, channel, message,
@@ -53,8 +53,11 @@ module Cargosocket
         end
 
         ws.onerror do |error|
-          p error
-          #todo
+          cargoenv[:adapter].unsubscribe(state) do |channel|
+            cb_adapter.error(cargoenv, path, ref, channel) do |v|
+              cargoenv[:adapter].push(channel, v)
+            end
+          end
         end
 
         ws.onclose do
@@ -65,7 +68,7 @@ module Cargosocket
           end
         end
       else
-        ws.close(3001, channels || ref || "unknown")
+        ws.close(3001, channels.inspect || ref.to_s || "unknown")
       end
     end
   end

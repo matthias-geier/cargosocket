@@ -12,6 +12,7 @@ module Cargobull
       "REFERENCE" => :reference,
       "SUBSCRIBE" => :subscribe,
       "UNSUBSCRIBE" => :unsubscribe,
+      "ERROR" => :error,
       "POP" => :pop,
       "PUSH" => :push
     })

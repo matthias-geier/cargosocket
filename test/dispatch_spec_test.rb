@@ -2,9 +2,10 @@ class Student
   include Cargobull::Service
 
   def channels(params); "works"; end
-  def reference; "works"; end
+  def reference(params); "works"; end
   def subscribe(ref, channel); "works"; end
   def unsubscribe(ref, channel); "works"; end
+  def error(ref, channel); "works"; end
   def pop(ref, channel, message); "works"; end
   def push(ref, channel, message); "works"; end
 end
@@ -39,7 +40,7 @@ describe Cargobull::Dispatch do
 
       it "should call the reference" do
         assert_equal [200, { "Content-Type" => "text/plain" }, "works"],
-          Cargobull::Dispatch.send(m, @env, "REFERENCE", 'student')
+          Cargobull::Dispatch.send(m, @env, "REFERENCE", 'student', {})
       end
 
       it "should call the subscribe with ref and channel" do
@@ -50,6 +51,11 @@ describe Cargobull::Dispatch do
       it "should call the unsubscribe with ref and channel" do
         assert_equal [200, { "Content-Type" => "text/plain" }, "works"],
           Cargobull::Dispatch.send(m, @env, "UNSUBSCRIBE", 'student', "", "")
+      end
+
+      it "should call the error with ref and channel" do
+        assert_equal [200, { "Content-Type" => "text/plain" }, "works"],
+          Cargobull::Dispatch.send(m, @env, "ERROR", 'student', "", "")
       end
 
       it "should call the push with ref, channel and message" do

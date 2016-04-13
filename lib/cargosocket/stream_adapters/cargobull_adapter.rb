@@ -18,8 +18,8 @@ module Cargosocket
         end
       end
 
-      def self.reference(cargoenv, path)
-        r = dispatch_to(:call_no_transform, cargoenv, "REFERENCE", path)
+      def self.reference(cargoenv, path, query)
+        r = dispatch_to(:call_no_transform, cargoenv, "REFERENCE", path, query)
         if r.first == 200
           r.last
         end
@@ -31,6 +31,10 @@ module Cargosocket
 
       def self.unsubscribe(cargoenv, *args)
         if_value(dispatch_to(:call, cargoenv, "UNSUBSCRIBE", *args), &Proc.new)
+      end
+
+      def self.error(cargoenv, *args)
+        if_value(dispatch_to(:call, cargoenv, "ERROR", *args), &Proc.new)
       end
 
       def self.push(cargoenv, *args)
