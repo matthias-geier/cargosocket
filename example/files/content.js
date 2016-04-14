@@ -2,54 +2,66 @@ var Content = React.createClass({displayName: "Content",
   getInitialState: function() {
     return { channels: [], errors: [] };
   },
-  setChannels: function(channels) {
+  withState: function(key, func) {
     var state = this.state;
-    state.channels = channels || [];
+    state[key] = func(state[key]);
     this.setState(state);
+  },
+  delayWithState: function(key, func) {
+    return function() {
+      this.withState(key, func);
+    }.bind(this);
   },
   updateChannels: function() {
     promise.get("/api/talk").then(function(err, text, xhr) {
       var payload = JSON.parse(text);
       if (payload.status === 200) {
-        this.setChannels(payload.body);
+        this.withState("channels", function() { return payload.body; });
       }
     }.bind(this));
   },
-  shiftError: function() {
-    var state = this.state;
-    state.errors = state.errors.slice(1);
-    this.setState(state);
-  },
   addError: function(err) {
-    var state = this.state;
-    state.errors.push(err);
-    this.setState(state);
+    this.withState("errors", function(list) {
+      list.push(err);
+      return list;
+    });
 
     var p = new promise.Promise();
     setTimeout(function(){ p.done(); }, 5000);
-    p.then(this.shiftError);
+    p.then(this.delayWithState("errors", function(list) {
+      return list.slice(1);
+    }));
   },
   componentDidMount: function() {
     this.updateChannels();
   },
+  errors: function() {
+    return this.state.errors.map(function(err, i) {
+      return React.createElement("p", {key: i, className: "bg-danger"}, err);
+    }.bind(this));
+  },
+  channels: function(opts) {
+    if (this.state.channels.length === 0) {
+      return "No channels found";
+    }
+    return React.createElement("ul", null, 
+      this.state.channels.map(function(elem) {
+        return React.createElement(ChannelItem, {key: elem, name: elem, opts: opts});
+      }.bind(this))
+    );
+  },
   render: function() {
+    var opts = {
+      withState: this.withState,
+      addError: this.addError,
+      updateChannels: this.updateChannels
+    };
     return React.createElement("div", {className: "container"}, 
       React.createElement("h2", null, "Channels"), 
-      
-        this.state.errors.map(function(err, i) {
-          return React.createElement("p", {key: i, className: "bg-danger"}, err);
-        }.bind(this)), 
-      
-      React.createElement(AddChannel, {updateChannels: this.updateChannels, 
-        addError: this.addError}), 
-       this.state.channels.length === 0 ?
-        "No channels found" :
-        React.createElement("ul", null,  this.state.channels.map(function(elem) {
-          return React.createElement(ChannelItem, {key: elem, name: elem, 
-            updateChannels: this.updateChannels, addError: this.addError});
-        }.bind(this)) ), 
-      
-      React.createElement(Chat, {channels: this.state.channels, addError: this.addError})
+      this.errors(), 
+      React.createElement(AddChannel, {opts: opts}), 
+      this.channels(opts), 
+      React.createElement(ChatFrame, {channels: this.state.channels, opts: opts})
     );
   }
 });

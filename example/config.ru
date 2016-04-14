@@ -1,5 +1,5 @@
 # optional flag when using the lib without installing
- $LOAD_PATH.unshift("~/cargobull/lib")
+# $LOAD_PATH.unshift("~/cargobull/lib")
 require 'cargobull'
 
 # curl calls

@@ -9,9 +9,9 @@ var AddChannel = React.createClass({displayName: "AddChannel",
       this.refs.channel.value = "";
       var payload = JSON.parse(text);
       if (payload.status === 200) {
-        this.props.updateChannels();
+        this.props.opts.updateChannels();
       } else {
-        this.props.addError(payload.body);
+        this.props.opts.addError(payload.body);
       }
     }.bind(this));
     e.preventDefault();
